@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Treasure Tussle</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #102a43, #176b87);
+    color: white;
+    padding: 25px;
+}
+
+/* ================= TITLE ================= */
+
+.title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.title h1 {
+    font-size: 42px;
+    color: #ffd166;
+    margin-bottom: 8px;
+}
+
+.title p {
+    font-size: 17px;
+    opacity: 0.9;
+}
+
+/* ================= TURN ================= */
+
+.turn-box {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.turn {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 30px;
+    background: white;
+    color: #17324d;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+/* ================= SCORE ================= */
+
+.scoreboard {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.score {
+    padding: 12px 28px;
+    border-radius: 15px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.team-a-score {
+    background: #2878e8;
+}
+
+.team-b-score {
+    background: #21a66b;
+}
+
+/* ================= BOARDS ================= */
+
+.boards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+.team-board {
+    background: rgba(255,255,255,0.12);
+    padding: 20px;
+    border-radius: 25px;
+    backdrop-filter: blur(8px);
+}
+
+.team-name {
+    text-align: center;
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.team-a {
+    color: #6fb1ff;
+}
+
+.team-b {
+    color: #63e6a7;
+}
+
+/* ================= GRID ================= */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+/* ================= TILES ================= */
+
+.tile {
+    height: 110px;
+
+    border: none;
+    border-radius: 16px;
+
+    /* MÀU BAN ĐẦU */
+    background: #8b9299;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.25s ease,
+        background 0.3s ease,
+        box-shadow 0.3s ease;
+
+    box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,0.12),
+        0 5px 10px rgba(0,0,0,0.15);
+}
+
+/* Hover */
+
+.tile:hover {
+    transform: scale(1.04);
+    background: #aab0b5;
+}
+
+/* Team A */
+
+.tile.team-a-owned {
+    background: #2878e8;
+
+    box-shadow:
+        0 0 15px rgba(40,120,232,0.6);
+}
+
+/* Team B */
+
+.tile.team-b-owned {
+    background: #21a66b;
+
+    box-shadow:
+        0 0 15px rgba(33,166,107,0.6);
+}
+
+/* Khi ô đang chuyển */
+
+.tile.transfer {
+    animation: transfer 0.6s ease;
+}
+
+@keyframes transfer {
+
+    0% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.15) rotate(4deg);
+    }
+
+    70% {
+        transform: scale(0.9) rotate(-4deg);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ================= MODAL ================= */
+
+.modal {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,0.72);
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 100;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-box {
+    background: white;
+    color: #17324d;
+
+    width: 90%;
+    max-width: 650px;
+
+    padding: 30px;
+
+    border-radius: 25px;
+
+    text-align: center;
+
+    animation: popup 0.25s ease;
+}
+
+@keyframes popup {
+
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-box h2 {
+    margin-bottom: 20px;
+    color: #176b87;
+}
+
+.question {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* ================= ANSWERS ================= */
+
+.answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.answer {
+    padding: 15px;
+
+    border: 2px solid #d9e2ec;
+    border-radius: 12px;
+
+    background: #f5f8fa;
+
+    cursor: pointer;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    transition: 0.2s;
+}
+
+.answer:hover {
+    background: #e5f1ff;
+    transform: translateY(-2px);
+}
+
+.answer:disabled {
+    cursor: default;
+}
+
+/* ================= FEEDBACK ================= */
+
+.feedback {
+    font-size: 25px;
+    font-weight: bold;
+
+    margin-top: 20px;
+
+    display: none;
+}
+
+.correct {
+    color: #21a66b;
+}
+
+.wrong {
+    color: #e05252;
+}
+
+/* ================= BUTTON ================= */
+
+.close-btn,
+.reset-btn {
+
+    margin-top: 20px;
+
+    padding: 12px 28px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #17324d;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    font-size: 16px;
+
+    transition: 0.2s;
+}
+
+.close-btn:hover,
+.reset-btn:hover {
+    transform: scale(1.04);
+}
+
+/* ================= SURPRISE ================= */
+
+.surprise {
+    font-size: 70px;
+    margin-bottom: 15px;
+}
+
+.surprise-text {
+    font-size: 20px;
+    line-height: 1.5;
+}
+
+/* ================= WINNER ================= */
+
+.winner {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,0.8);
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 200;
+}
+
+.winner.show {
+    display: flex;
+}
+
+.winner-box {
+
+    background: white;
+
+    color: #17324d;
+
+    padding: 45px;
+
+    border-radius: 25px;
+
+    text-align: center;
+
+    animation: popup 0.3s ease;
+}
+
+.winner-box h1 {
+
+    font-size: 45px;
+
+    color: #f0a500;
+
+    margin-bottom: 20px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width: 800px) {
+
+    .boards {
+        grid-template-columns: 1fr;
+    }
+
+    .title h1 {
+        font-size: 32px;
+    }
+
+    .tile {
+        height: 85px;
+    }
+}
+
+@media(max-width: 500px) {
+
+    .answers {
+        grid-template-columns: 1fr;
+    }
+
+    .tile {
+        height: 70px;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<!-- ================= TITLE ================= -->
+
+<div class="title">
+
+    <h1>🗺️ TREASURE TUSSLE</h1>
+
+    <p>Answer • Capture • Steal • Win!</p>
+
+</div>
+
+
+<!-- ================= TURN ================= -->
+
+<div class="turn-box">
+
+    <div class="turn" id="turnDisplay">
+        🟦 TEAM A's TURN
+    </div>
+
+</div>
+
+
+<!-- ================= SCORE ================= -->
+
+<div class="scoreboard">
+
+    <div class="score team-a-score">
+
+        🟦 TEAM A:
+        <span id="scoreA">0</span>
+
+    </div>
+
+
+    <div class="score team-b-score">
+
+        🟩 TEAM B:
+        <span id="scoreB">0</span>
+
+    </div>
+
+</div>
+
+
+<!-- ================= BOARDS ================= -->
+
+<div class="boards">
+
+
+    <!-- TEAM A -->
+
+    <div class="team-board">
+
+        <div class="team-name team-a">
+            🟦 TEAM A
+        </div>
+
+        <div
+            class="grid"
+            id="boardA">
+        </div>
+
+    </div>
+
+
+    <!-- TEAM B -->
+
+    <div class="team-board">
+
+        <div class="team-name team-b">
+            🟩 TEAM B
+        </div>
+
+        <div
+            class="grid"
+            id="boardB">
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- QUESTION MODAL -->
+<!-- ================================================= -->
+
+<div
+    class="modal"
+    id="questionModal">
+
+    <div class="modal-box">
+
+        <h2 id="modalTitle">
+            QUESTION
+        </h2>
+
+        <div
+            class="question"
+            id="questionText">
+        </div>
+
+
+        <div
+            class="answers"
+            id="answers">
+        </div>
+
+
+        <div
+            class="feedback"
+            id="feedback">
+        </div>
+
+
+        <button
+            class="close-btn"
+            id="closeModal">
+
+            Continue
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- SURPRISE MODAL -->
+<!-- ================================================= -->
+
+<div
+    class="modal"
+    id="surpriseModal">
+
+    <div class="modal-box">
+
+        <div
+            class="surprise"
+            id="surpriseIcon">
+
+            🎁
+
+        </div>
+
+
+        <h2 id="surpriseTitle">
+            SURPRISE!
+        </h2>
+
+
+        <div
+            class="surprise-text"
+            id="surpriseText">
+        </div>
+
+
+        <button
+            class="close-btn"
+            id="surpriseClose">
+
+            Continue
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<!-- ================================================= -->
+<!-- WINNER -->
+<!-- ================================================= -->
+
+<div
+    class="winner"
+    id="winner">
+
+    <div class="winner-box">
+
+        <h1>
+            🏆 BINGO!
+        </h1>
+
+
+        <h2 id="winnerTeam">
+        </h2>
+
+
+        <p>
+            Congratulations!
+        </p>
+
+
+        <button
+            class="reset-btn"
+            onclick="resetGame()">
+
+            Play Again
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+/* =====================================================
+   GAME DATA
+===================================================== */
+
+
+/*
+    owner[i]
+
+    null = chưa có đội nào
+
+    "A" = Team A sở hữu
+
+    "B" = Team B sở hữu
+*/
+
+let owner = Array(12).fill(null);
+
+
+/*
+    Đội đang được chơi
+*/
+
+let currentTeam = "A";
+
+
+/*
+    Ô đang được chọn
+*/
+
+let selectedTile = null;
+
+
+/*
+    Đội chọn ô
+*/
+
+let selectedTeam = null;
+
+
+/*
+    Trạng thái câu hỏi đã trả lời
+*/
+
+let answerLocked = false;
+
+
+
+/* =====================================================
+   QUESTIONS
+===================================================== */
+
+const questions = [
+
+    {
+        question:
+        "Choose the correct preposition: The book is ___ the table.",
+
+        answers:
+        ["in", "on", "at", "to"],
+
+        correct: 1
+    },
+
+
+    {
+        question:
+        "Which sentence is correct?",
+
+        answers:
+        [
+            "She go to school.",
+            "She goes to school.",
+            "She going to school.",
+            "She gone to school."
+        ],
+
+        correct: 1
+    },
+
+
+    {
+        question:
+        "I ___ English every day.",
+
+        answers:
+        [
+            "study",
+            "studies",
+            "studying",
+            "studied"
+        ],
+
+        correct: 0
+    },
+
+
+    {
+        question:
+        "Which one is a preposition?",
+
+        answers:
+        [
+            "quickly",
+            "beautiful",
+            "under",
+            "happily"
+        ],
+
+        correct: 2
+    },
+
+
+    {
+        question:
+        "The students are ___ the classroom.",
+
+        answers:
+        [
+            "in",
+            "to",
+            "from",
+            "by"
+        ],
+
+        correct: 0
+    },
+
+
+    {
+        question:
+        "Yesterday, they ___ football.",
+
+        answers:
+        [
+            "play",
+            "plays",
+            "played",
+            "playing"
+        ],
+
+        correct: 2
+    },
+
+
+    {
+        question:
+        "The cat is ___ the chair.",
+
+        answers:
+        [
+            "under",
+            "quickly",
+            "beautiful",
+            "happily"
+        ],
+
+        correct: 0
+    },
+
+
+    {
+        question:
+        "We arrived ___ school at 7 a.m.",
+
+        answers:
+        [
+            "on",
+            "in",
+            "at",
+            "to"
+        ],
+
+        correct: 2
+    }
+
+];
+
+
+
+/* =====================================================
+   SURPRISES
+===================================================== */
+
+const surprises = [
+
+    {
+        icon: "💎",
+
+        title: "LUCKY TREASURE!",
+
+        text:
+        "You found a treasure! You can steal one tile from the other team."
+    },
+
+
+    {
+        icon: "💣",
+
+        title: "TRAP!",
+
+        text:
+        "Oh no! One of your tiles may be transferred to the other team."
+    },
+
+
+    {
+        icon: "🛡️",
+
+        title: "SHIELD!",
+
+        text:
+        "Your team gets a shield! One tile can be protected from transfer."
+    },
+
+
+    {
+        icon: "🔄",
+
+        title: "SWITCH!",
+
+        text:
+        "You can switch one tile with the other team."
+    }
+
+];
+
+
+
+/*
+    Những ô nào là Surprise
+    được giấu hoàn toàn.
+*/
+
+let surpriseTiles = [];
+
+
+/* =====================================================
+   RANDOMIZE SURPRISE TILES
+===================================================== */
+
+function randomizeSurprises() {
+
+    surpriseTiles = [];
+
+    while (surpriseTiles.length < 4) {
+
+        const random =
+            Math.floor(Math.random() * 12);
+
+        if (!surpriseTiles.includes(random)) {
+
+            surpriseTiles.push(random);
+
+        }
+
+    }
+
+}
+
+
+
+/* =====================================================
+   CREATE BOARDS
+===================================================== */
+
+function createBoards() {
+
+    const boardA =
+        document.getElementById("boardA");
+
+    const boardB =
+        document.getElementById("boardB");
+
+
+    boardA.innerHTML = "";
+
+    boardB.innerHTML = "";
+
+
+    for (let i = 0; i < 12; i++) {
+
+        boardA.appendChild(
+            createTile(i, "A")
+        );
+
+
+        boardB.appendChild(
+            createTile(i, "B")
+        );
+
+    }
+
+
+    updateScore();
+
+}
+
+
+
+/* =====================================================
+   CREATE TILE
+===================================================== */
+
+function createTile(index, team) {
+
+    const button =
+        document.createElement("button");
+
+
+    /*
+        Không có text.
+        Không có số.
+        Không có icon.
+    */
+
+    button.className = "tile";
+
+
+    /*
+        Hiển thị màu theo owner
+    */
+
+    if (owner[index] === "A") {
+
+        button.classList.add(
+            "team-a-owned"
+        );
+
+    }
+
+
+    if (owner[index] === "B") {
+
+        button.classList.add(
+            "team-b-owned"
+        );
+
+    }
+
+
+    /*
+        Chỉ đội đang sở hữu ô
+        mới có quyền click lại ô đó.
+
+        Ô xám chưa có chủ
+        thì đội đang chơi có thể chọn.
+    */
+
+    if (
+        owner[index] !== null &&
+        owner[index] !== team
+    ) {
+
+        button.disabled = true;
+
+        button.style.cursor = "not-allowed";
+
+        button.style.opacity = "0.45";
+
+    }
+
+
+    /*
+        Chỉ đội đang tới lượt
+        mới được click.
+    */
+
+    if (currentTeam !== team) {
+
+        button.disabled = true;
+
+        button.style.cursor = "not-allowed";
+
+        button.style.opacity = "0.45";
+
+    }
+
+
+    button.onclick = function() {
+
+        selectTile(index, team);
+
+    };
+
+
+    return button;
+
+}
+
+
+
+/* =====================================================
+   SELECT TILE
+===================================================== */
+
+function selectTile(index, team) {
+
+
+    /*
+        Không cho click sai lượt
+    */
+
+    if (team !== currentTeam) {
+
+        return;
+
+    }
+
+
+    /*
+        Nếu ô thuộc đội khác
+        thì không được chọn.
+    */
+
+    if (
+        owner[index] !== null &&
+        owner[index] !== team
+    ) {
+
+        return;
+
+    }
+
+
+    selectedTile = index;
+
+    selectedTeam = team;
+
+
+    /*
+        Random:
+        Question hoặc Surprise
+    */
+
+    if (surpriseTiles.includes(index)) {
+
+        showSurprise();
+
+    }
+
+    else {
+
+        showQuestion();
+
+    }
+
+}
+
+
+
+/* =====================================================
+   SHOW QUESTION
+===================================================== */
+
+function showQuestion() {
+
+    answerLocked = false;
+
+
+    const modal =
+        document.getElementById(
+            "questionModal"
+        );
+
+
+    const questionText =
+        document.getElementById(
+            "questionText"
+        );
+
+
+    const answers =
+        document.getElementById(
+            "answers"
+        );
+
+
+    const feedback =
+        document.getElementById(
+            "feedback"
+        );
+
+
+    /*
+        Lấy câu hỏi dựa trên ô
+    */
+
+    const question =
+        questions[
+            selectedTile %
+            questions.length
+        ];
+
+
+    questionText.innerText =
+        question.question;
+
+
+    answers.innerHTML = "";
+
+
+    feedback.style.display =
+        "none";
+
+
+    question.answers.forEach(
+        function(answer, index) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "answer";
+
+
+            button.innerText =
+                answer;
+
+
+            button.onclick =
+                function() {
+
+                    checkAnswer(
+                        index
+                    );
+
+                };
+
+
+            answers.appendChild(
+                button
+            );
+
+        }
+    );
+
+
+    modal.classList.add("show");
+
+}
+
+
+
+/* =====================================================
+   CHECK ANSWER
+===================================================== */
+
+function checkAnswer(answerIndex) {
+
+
+    if (answerLocked) {
+
+        return;
+
+    }
+
+
+    answerLocked = true;
+
+
+    const question =
+        questions[
+            selectedTile %
+            questions.length
+        ];
+
+
+    const feedback =
+        document.getElementById(
+            "feedback"
+        );
+
+
+    /*
+        Khóa các đáp án
+    */
+
+    document
+        .querySelectorAll(".answer")
+        .forEach(
+            button => {
+
+                button.disabled = true;
+
+            }
+        );
+
+
+
+    /* ================= CORRECT ================= */
+
+    if (
+        answerIndex ===
+        question.correct
+    ) {
+
+        feedback.innerText =
+            "🎉 CORRECT!";
+
+
+        feedback.className =
+            "feedback correct";
+
+
+        feedback.style.display =
+            "block";
+
+
+        /*
+            Đội hiện tại chiếm ô
+        */
+
+        owner[selectedTile] =
+            selectedTeam;
+
+    }
+
+
+
+    /* ================= WRONG ================= */
+
+    else {
+
+        feedback.innerText =
+            "❌ WRONG! The tile goes to the other team!";
+
+
+        feedback.className =
+            "feedback wrong";
+
+
+        feedback.style.display =
+            "block";
+
+
+        /*
+            Chuyển ô sang đội đối phương
+        */
+
+        if (selectedTeam === "A") {
+
+            owner[selectedTile] = "B";
+
+        }
+
+        else {
+
+            owner[selectedTile] = "A";
+
+        }
+
+    }
+
+
+    createBoards();
+
+
+    /*
+        Kiểm tra Bingo
+    */
+
+    checkBingo();
+
+}
+
+
+
+/* =====================================================
+   SHOW SURPRISE
+===================================================== */
+
+function showSurprise() {
+
+    const modal =
+        document.getElementById(
+            "surpriseModal"
+        );
+
+
+    const surprise =
+        surprises[
+            Math.floor(
+                Math.random() *
+                surprises.length
+            )
+        ];
+
+
+    document.getElementById(
+        "surpriseIcon"
+    ).innerText =
+        surprise.icon;
+
+
+    document.getElementById(
+        "surpriseTitle"
+    ).innerText =
+        surprise.title;
+
+
+    document.getElementById(
+        "surpriseText"
+    ).innerText =
+        surprise.text;
+
+
+    /*
+        Tạm thời:
+        khi gặp Surprise,
+        đội hiện tại chiếm ô.
+    */
+
+    owner[selectedTile] =
+        selectedTeam;
+
+
+    createBoards();
+
+
+    modal.classList.add("show");
+
+}
+
+
+
+/* =====================================================
+   CLOSE QUESTION
+===================================================== */
+
+document.getElementById(
+    "closeModal"
+).onclick = function() {
+
+
+    document.getElementById(
+        "questionModal"
+    ).classList.remove("show");
+
+
+    /*
+        Đổi lượt
+    */
+
+    changeTurn();
+
+
+};
+
+
+
+/* =====================================================
+   CLOSE SURPRISE
+===================================================== */
+
+document.getElementById(
+    "surpriseClose"
+).onclick = function() {
+
+
+    document.getElementById(
+        "surpriseModal"
+    ).classList.remove("show");
+
+
+    /*
+        Đổi lượt
+    */
+
+    changeTurn();
+
+
+};
+
+
+
+/* =====================================================
+   CHANGE TURN
+===================================================== */
+
+function changeTurn() {
+
+
+    if (currentTeam === "A") {
+
+        currentTeam = "B";
+
+    }
+
+    else {
+
+        currentTeam = "A";
+
+    }
+
+
+    updateTurn();
+
+
+    createBoards();
+
+}
+
+
+
+/* =====================================================
+   UPDATE TURN
+===================================================== */
+
+function updateTurn() {
+
+    const display =
+        document.getElementById(
+            "turnDisplay"
+        );
+
+
+    if (currentTeam === "A") {
+
+        display.innerText =
+            "🟦 TEAM A'S TURN";
+
+    }
+
+    else {
+
+        display.innerText =
+            "🟩 TEAM B'S TURN";
+
+    }
+
+}
+
+
+
+/* =====================================================
+   UPDATE SCORE
+===================================================== */
+
+function updateScore() {
+
+
+    let scoreA = 0;
+
+    let scoreB = 0;
+
+
+    owner.forEach(
+        function(team) {
+
+            if (team === "A") {
+
+                scoreA++;
+
+            }
+
+
+            if (team === "B") {
+
+                scoreB++;
+
+            }
+
+        }
+    );
+
+
+    document.getElementById(
+        "scoreA"
+    ).innerText = scoreA;
+
+
+    document.getElementById(
+        "scoreB"
+    ).innerText = scoreB;
+
+}
+
+
+
+/* =====================================================
+   CHECK BINGO
+===================================================== */
+
+function checkBingo() {
+
+
+    /*
+        Chỉ HÀNG NGANG + HÀNG DỌC
+
+        Không có đường chéo.
+    */
+
+    const lines = [
+
+        /* Hàng ngang */
+
+        [0,1,2,3],
+
+        [4,5,6,7],
+
+        [8,9,10,11],
+
+
+        /* Hàng dọc */
+
+        [0,4,8],
+
+        [1,5,9],
+
+        [2,6,10],
+
+        [3,7,11]
+
+    ];
+
+
+    for (
+        let line of lines
+    ) {
+
+
+        if (
+            line.every(
+                index =>
+                owner[index] === "A"
+            )
+        ) {
+
+            showWinner(
+                "🟦 TEAM A"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            line.every(
+                index =>
+                owner[index] === "B"
+            )
+        ) {
+
+            showWinner(
+                "🟩 TEAM B"
+            );
+
+            return;
+
+        }
+
+    }
+
+}
+
+
+
+/* =====================================================
+   WINNER
+===================================================== */
+
+function showWinner(team) {
+
+
+    document.getElementById(
+        "winnerTeam"
+    ).innerText =
+        team + " WINS!";
+
+
+    document.getElementById(
+        "winner"
+    ).classList.add("show");
+
+}
+
+
+
+/* =====================================================
+   RESET GAME
+===================================================== */
+
+function resetGame() {
+
+
+    owner =
+        Array(12).fill(null);
+
+
+    currentTeam = "A";
+
+
+    selectedTile = null;
+
+
+    selectedTeam = null;
+
+
+    randomizeSurprises();
+
+
+    document.getElementById(
+        "winner"
+    ).classList.remove("show");
+
+
+    updateTurn();
+
+
+    createBoards();
+
+}
+
+
+
+/* =====================================================
+   START GAME
+===================================================== */
+
+randomizeSurprises();
+
+createBoards();
+
+updateTurn();
+
+</script>
+
+</body>
+</html>
